@@ -1,9 +1,11 @@
 import { GameLayout } from "../components/gameLayout";
-
-export const Game = () => {
-    return (
-        <>
-            <GameLayout />
-        </>
-    );
-};
+import { Component } from "react";
+export class Game extends Component {
+    render() {
+        return (
+            <>
+                <GameLayout />
+            </>
+        );
+    }
+}

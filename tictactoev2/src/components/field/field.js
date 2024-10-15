@@ -1,5 +1,5 @@
 import { FieldLayout } from "./fieldLayout.js";
-
-export const Field = () => {
-    return <FieldLayout />;
-};
+import { Component } from "react";
+export class Field extends Component {
+    render = () => <FieldLayout />;
+}

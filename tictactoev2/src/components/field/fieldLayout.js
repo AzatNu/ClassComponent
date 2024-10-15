@@ -1,84 +1,80 @@
-import style from "./field.module.css";
-import { store } from "../store";
-import { useDispatch, useSelector } from "react-redux";
+import { Component } from "react";
+import { connect } from "react-redux";
 
-export const FieldLayout = () => {
-    const dispatch = useDispatch();
-
-    const field = useSelector((state) => state.field);
-    const currentPlayer = useSelector((state) => state.currentPlayer);
-    const isGameEnded = useSelector((state) => state.isGameEnded);
-    const isDraw = useSelector((state) => state.isDraw);
-
-    const winPatterns = [
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8],
-        [0, 3, 6],
-        [1, 4, 7],
-        [2, 5, 8],
-        [0, 4, 8],
-        [2, 4, 6],
-    ];
-
-    const checkWinAndDoAction = (index) => {
+export class FieldLayoutContainer extends Component {
+    checkWinAndDoAction = (index) => {
+        const { dispatch, field, currentPlayer, isGameEnded } = this.props;
         const newField = field.map((item, i) =>
             i === index ? currentPlayer : item
         );
-        store.dispatch({ type: "SET_FIELD", payload: newField });
+        dispatch({ type: "SET_FIELD", payload: newField });
         if (newField.every((item) => item !== ``) && !isGameEnded) {
-            store.dispatch({ type: "SET_DRAW", payload: true });
+            dispatch({ type: "SET_DRAW", payload: true });
         }
-        winPatterns.forEach((pattern) => {
+        this.props.winPatterns.forEach((pattern) => {
             if (
                 newField[pattern[0]] !== `` &&
                 newField[pattern[0]] === newField[pattern[1]] &&
                 newField[pattern[1]] === newField[pattern[2]]
             ) {
-                store.dispatch({ type: "SET_GAME_ENDED", payload: true });
-                store.dispatch({
-                    type: "SET_WINNER",
-                    payload: newField[pattern[0]],
-                });
+                dispatch({ type: "SET_GAME_ENDED", payload: true });
+                dispatch({ type: "SET_WINNER", payload: newField[pattern[0]] });
             }
         });
     };
-
-    const changePlayer = () => {
+    changePlayer = () => {
+        const { dispatch, currentPlayer } = this.props;
         dispatch({
             type: "SET_CURRENT_PLAYER",
             payload: currentPlayer === `X` ? `O` : `X`,
         });
     };
-
-    const restart = () => {
+    restart = () => {
+        const { dispatch } = this.props;
         dispatch({ type: "RESTART_GAME" });
     };
-
-    return (
-        <>
-            <div className={style.game}>
-                {field.map((item, index) => (
-                    <button
-                        disabled={isGameEnded || isDraw || item !== ``}
-                        className={
-                            item !== ``
-                                ? style.fieldButtonOccupied
-                                : style.fieldButton
-                        }
-                        onClick={() => {
-                            checkWinAndDoAction(index);
-                            changePlayer();
-                        }}
-                        key={index}
-                    >
-                        {item}
-                    </button>
-                ))}
-            </div>
-            <button className={style.gameButton} onClick={restart}>
-                Начать заново
-            </button>
-        </>
-    );
+    render() {
+        const { field, isGameEnded, isDraw } = this.props;
+        return (
+            <>
+                <div className="w-[650px] h-[600px] border-none bg-[rgb(7,155,160)] rounded-[30px] grid grid-cols-3 grid-rows-3 shadow-[20px_0px_20px_0px_rgba(0,0,0,0.575)] justify-around">
+                    {field.map((item, index) => (
+                        <button
+                            disabled={isGameEnded || isDraw || item !== ``}
+                            className={
+                                item !== ``
+                                    ? "w-[180px] h-[180px] border-none rounded-lg bg-green-500 shadow-lg text-8xl font-bold mt-8 outline-none text-gray-900   ml-[10%] mt-[5%] "
+                                    : "display-flex w-[180px] h-[180px] border-0 rounded-[30px] bg-white shadow-[0px_0px_20px_rgba(0,0,0,0.575)] text-[100px] text-white font-bold cursor-pointer mt-[30px] justify-around items-center outline-none hover:bg-[white] hover:bg-green-400 ml-[10%] mt-[5%] "
+                            }
+                            onClick={() => {
+                                this.checkWinAndDoAction(index);
+                                this.changePlayer();
+                            }}
+                            key={index}
+                        >
+                            {item}
+                        </button>
+                    ))}
+                </div>
+                <button
+                    className="w-[200px] h-[40px] border-none bg-[rgb(7,155,160)] shadow-[0px_0px_20px_0px_rgba(0,0,0,0.575)] rounded-[30px] mt-[10px] font-bold text-[20px] text-[white] color-[white] cursor-pointer hover:bg-[rgb(50,11,223)] hover:animate-grow "
+                    onClick={this.restart}
+                >
+                    Начать заново
+                </button>
+            </>
+        );
+    }
+}
+const mapStateToProps = (state) => {
+    return {
+        field: state.field,
+        currentPlayer: state.currentPlayer,
+        isGameEnded: state.isGameEnded,
+        isDraw: state.isDraw,
+        winner: state.winner,
+        winPatterns: state.winPatterns,
+    };
 };
+
+export const FieldLayout = connect(mapStateToProps)(FieldLayoutContainer);
